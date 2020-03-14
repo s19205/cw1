@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -41,18 +42,40 @@ namespace Cw2
                 {
                     map[key] = map[key] + 1;
                 }
-
             }
             return map;
         }
+
+        public static string[] removeDuplicates(string[] source)
+        {
+            HashSet<string> set = new HashSet<string>();
+            var newStr = new ArrayList();
+            foreach (string str in source)
+            {
+                var fields = str.Split(',');
+                var studentIndex = fields[4];
+                if (!set.Contains(studentIndex))
+                {
+                    newStr.Add(str);
+                    set.Add(studentIndex);
+                }    
+            }
+            
+            return (string[])newStr.ToArray(typeof(string));
+        }
+
+
 
         static void Main(string[] args)
         {
             try
             {
                 string csvpath = Console.ReadLine();    //Z:\4semestr\APBD\cw2\dane.csv
+                if (csvpath == "") csvpath = @"Z:\4semestr\APBD\cw2\dane.csv";
                 string xmlpath = Console.ReadLine();    //Z:\4semestr\APBD\cw2\
+                if (xmlpath == "") xmlpath = @"Z:\4semestr\APBD\cw2\";
                 string format = Console.ReadLine();     //xml
+                if (format == "") format = "xml"; 
 
                 var map = new Dictionary<string, int>();
                 
@@ -63,6 +86,7 @@ namespace Cw2
                     var dateOnlyString = dateTimeNow.ToShortDateString();
                     string[] source = File.ReadAllLines(csvpath);
 
+                    source = removeDuplicates(source);
                     map = studies(source);
 
                     XElement xml = new XElement("uczelnia", 
