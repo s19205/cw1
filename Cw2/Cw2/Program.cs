@@ -53,18 +53,44 @@ namespace Cw2
             foreach (string str in source)
             {
                 var fields = str.Split(',');
-                var studentIndex = fields[4];
-                if (!set.Contains(studentIndex))
+                if(fields.Length < 9 || fieldsNull(fields) == true)
                 {
-                    newStr.Add(str);
-                    set.Add(studentIndex);
-                }    
+                    string logpath = @"Z:\4semestr\APBD\cw2\log.txt";
+                    if (!File.Exists(logpath))
+                    {
+                        File.Create(logpath).Dispose();
+                    }
+                    StreamWriter sw = File.AppendText(logpath);
+                    sw.WriteLine("Error:");
+                    sw.WriteLine("Lost student information " + fields[0] + " " + fields[1]);
+                    sw.Close();
+                }
+                else
+                {
+                    var studentIndex = fields[4];
+                    if (!set.Contains(studentIndex))
+                    {
+                        newStr.Add(str);
+                        set.Add(studentIndex);
+                    }
+                }
+
+                
             }
             
             return (string[])newStr.ToArray(typeof(string));
         }
 
-
+        public static bool fieldsNull(string[] source)                  
+        {
+            foreach(string str in source)
+            {
+                if (str == "")
+                    return true;
+            }
+            return false;
+        }
+        
 
         static void Main(string[] args)
         {
