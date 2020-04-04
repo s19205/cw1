@@ -41,9 +41,9 @@ namespace Cw3.Controllers
                     //st.IndexNumber = dr["IndexNumber"].ToString();
                     st.FirstName = dr["FirstName"].ToString();
                     st.LastName = dr["LastName"].ToString();
-                    st.BirthDate = dr["BirthDate"].ToString();
-                    st.Name = dr["Name"].ToString();
-                    st.Semester = dr.GetInt32(4);
+                //    st.BirthDate = dr["BirthDate"].ToString();
+                //    st.Name = dr["Name"].ToString();
+                //    st.Semester = dr.GetInt32(4);
                    // st.IdEnrollment = dr.GetInt32(4);
 
                     list.Add(st);
@@ -87,9 +87,9 @@ namespace Cw3.Controllers
                     //st.IndexNumber = dr["IndexNumber"].ToString();
                     st.FirstName = dr["FirstName"].ToString();
                     st.LastName = dr["LastName"].ToString();
-                    st.BirthDate = dr["BirthDate"].ToString();
-                    st.Name = dr["Name"].ToString();
-                    st.Semester = dr.GetInt32(4);
+                 //   st.BirthDate = dr["BirthDate"].ToString();
+                 //   st.Name = dr["Name"].ToString();
+                 //   st.Semester = dr.GetInt32(4);
                     // st.IdEnrollment = dr.GetInt32(4);
                     return Ok(st);
                 }
