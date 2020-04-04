@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Cw3.DTOs.Requests;
 using Cw3.DTOs.Responses;
@@ -191,15 +193,35 @@ namespace Cw3.Controllers
             response.LastName = request.LastName;
             response.Semester = semester;
             response.StartDate = startDate;
-            
-            return Ok(response);
+
+            return StatusCode(201, response);
         }
 
         [HttpPost("promotions")]
-        public IActionResult PromoteStudents(int semester, string studies)
+        public IActionResult PromoteStudents(PromoteStudentRequest request)
         {
+            var response = new PromoteStudentResponse();
+            using (SqlConnection con = new SqlConnection(ConString))
+            {
+                con.Open();
+                SqlCommand com = new SqlCommand("promoteStudent", con);
+                com.CommandType = CommandType.StoredProcedure;
 
-            return Ok();
+                com.Parameters.Add(new SqlParameter("@Studies", request.Studies));
+                com.Parameters.Add(new SqlParameter("@Semester", request.Semester));
+
+                using (SqlDataReader rdr = com.ExecuteReader())
+                {
+                    while (rdr.Read())
+                    {
+                        response.IdEnrollment = (int)rdr["IdEnrollment"];
+                        response.Semester = (int)rdr["Semester"];
+                        response.StartDate = (DateTime)rdr["StartDate"];
+                    }
+                }
+                con.Close();
+            }
+            return StatusCode(201, response);
         }
 
     
