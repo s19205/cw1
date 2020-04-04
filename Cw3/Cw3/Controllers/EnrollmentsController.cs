@@ -19,10 +19,7 @@ namespace Cw3.Controllers
     public class EnrollmentsController : ControllerBase
     {
         private IStudentDbService _service;
-        private int semester;
-        private DateTime startDate;
-        private const string ConString = "Data Source=db-mssql;Initial Catalog=s19205;Integrated Security=True";
-
+      
         public EnrollmentsController(IStudentDbService service)
         {
             _service = service;
