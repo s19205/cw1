@@ -1,0 +1,29 @@
+alter procedure promoteStudent @Studies NVARCHAR(100), @Semester INT
+AS
+BEGIN
+	SET XACT_ABORT ON;
+	BEGIN TRAN
+
+	DECLARE @IdStudies INT = (SELECT IdStudy FROM Studies WHERE Name=@Studies);
+	IF @IdStudies IS NULL
+	BEGIN
+		RAISERROR('STUDY NOT FOUND',10,1)
+		RETURN;
+	END	
+
+	DECLARE @IdEnrollment INT = (SELECT IdEnrollment FROM Enrollment WHERE Semester=(@Semester+1) AND IdStudy=@IdStudies);
+	IF @IdEnrollment IS NULL
+	BEGIN
+		DECLARE @NewIdEnroll INT = (select Max(IdEnrollment)+1 from Enrollment);
+		INSERT INTO Enrollment VALUES(@NewIdEnroll, @Semester+1,@IdStudies, CONVERT(date, GETDATE()));
+		SET @IdEnrollment = @NewIdEnroll;
+	END	
+	
+	UPDATE Student SET
+		IdEnrollment = @IdEnrollment
+		WHERE IdEnrollment = (SELECT IdEnrollment from Enrollment WHERE IdStudy = @IdStudies AND Semester = @Semester)
+
+	COMMIT
+
+	SELECT * FROM Enrollment WHERE IdEnrollment=@IdEnrollment;
+END;
