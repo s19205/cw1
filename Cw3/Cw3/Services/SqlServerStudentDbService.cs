@@ -203,5 +203,33 @@ namespace Cw3.Services
             }
             return response;
         }
+
+        public bool IsStudentExists(string StudentIndexNumber)
+        {
+            try
+            {
+                using (SqlConnection con = new SqlConnection(ConString))
+                using (SqlCommand com = new SqlCommand())
+                {
+                    com.Connection = con;
+                    com.CommandText = "Select * from Student where IndexNumber=@index";
+                    com.Parameters.AddWithValue("@index", StudentIndexNumber);
+
+                    con.Open();
+                    SqlDataReader reader = com.ExecuteReader();
+
+                    if (reader.Read())
+                    {
+                        reader.Close();
+                        return true;
+                    }
+                    reader.Close();
+                    return false;
+                }
+            } catch (Exception e)
+            {
+                return false;
+            }
+        }
     }
 }

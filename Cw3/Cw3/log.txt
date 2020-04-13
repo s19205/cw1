@@ -1,0 +1,68 @@
+POST
+/API/enrollments
+{
+"IndexNumber": "s1234",
+"FirstName": "Andrzej",
+"LastName": "Malewski",
+"BirthDate": "1993-03-03",
+"Studies": "IT"
+}
+
+POST
+/API/enrollments
+{
+"IndexNumber": "s1234",
+"FirstName": "Andrzej",
+"LastName": "Malewski",
+"BirthDate": "1993-03-03",
+"Studies": "IT"
+}
+?=s1901
+POST
+/API/enrollments
+{
+"IndexNumber": "s1234",
+"FirstName": "Andrzej",
+"LastName": "Malewski",
+"BirthDate": "1993-03-03",
+"Studies": "IT"
+}
+?IndexNumber=s1901
+GET
+/API/students
+
+
+POST
+/API/enrollments
+{
+"IndexNumber": "s1234",
+"FirstName": "Andrzej",
+"LastName": "Malewski",
+"BirthDate": "1993-03-03",
+"Studies": "IT"
+}
+?IndexNumber=s9001
+POST
+/API/enrollments
+{
+"IndexNumber": "s1234",
+"FirstName": "Andrzej",
+"LastName": "Malewski",
+"BirthDate": "1993-03-03",
+"Studies": "IT"
+}
+?IndexNumber=s9001
+GET
+/API/enrollments
+{
+"IndexNumber": "s1234",
+"FirstName": "Andrzej",
+"LastName": "Malewski",
+"BirthDate": "1993-03-03",
+"Studies": "IT"
+}
+?IndexNumber=s9001
+GET
+/API/enrollments
+
+?IndexNumber=s9001

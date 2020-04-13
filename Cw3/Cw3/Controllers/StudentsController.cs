@@ -23,6 +23,24 @@ namespace Cw3.Controllers
             _dbService = dbService;
         }
 
+   /*     [HttpGet]
+        public IActionResult GetStudents()
+        {
+            var list = new List<Student>();
+            list.Add(new Student { IndexNumber = "1", FirstName = "Jan", LastName = "Kowalski" });
+            list.Add(new Student { IndexNumber = "2", FirstName = "Andrzej", LastName = "Malewski" });
+
+            return Ok(list);
+        }
+
+        [HttpGet("{id}")]
+
+        public IActionResult GetStudent(int id)
+        {
+
+            return Ok(new Student { IndexNumber = "1", FirstName = "Andrzej", LastName = "Malewski" });
+        }
+
         [HttpGet]
         public IActionResult GetStudents()                  //4.2
         {
@@ -63,13 +81,6 @@ namespace Cw3.Controllers
                 com.Connection = con;
                 com.CommandText = "select FirstName, LastName, BirthDate, Name, Semester from student INNER JOIN Enrollment ON student.IdEnrollment = Enrollment.IdEnrollment INNER JOIN Studies ON Enrollment.IdStudy = Studies.IdStudy where indexnumber = @index";
 
-                /*
-                SqlParameter par = new SqlParameter();
-                par.Value = indexNumber;
-                par.ParameterName = "index";
-                com.Parameters.Add(par);
-                */
-
                 com.Parameters.AddWithValue("index", indexNumber);
 
                 con.Open();
@@ -77,12 +88,6 @@ namespace Cw3.Controllers
                 if (dr.Read())
                 {
                     var st = new Student();
-
-                    /*
-                    if (dr["IndexNumber"] == DBNull.Value)
-                    {
-                    }
-                    */
 
                     //st.IndexNumber = dr["IndexNumber"].ToString();
                     st.FirstName = dr["FirstName"].ToString();
@@ -97,60 +102,7 @@ namespace Cw3.Controllers
             }
                 return NotFound();
         }
+        */
 
-        
-                /*   [HttpGet("{id}")]
-                   public IActionResult GetStudent(int id)
-                   {
-                       if(id == 1)
-                       {
-                           return Ok("Kowalski");
-                       } else if(id == 2)
-                       {
-                           return Ok("Malewski");
-                       }
-
-                       return NotFound("Nie znaleziono studenta");
-                   }
-
-                   [HttpPost]
-                   public IActionResult CreateStudent(Student student)
-                   {
-                       student.IndexNumber = $"s{new Random().Next(1, 20000)}";
-                       sList.Add(new Student() {IdStudent=student.IdStudent,FirstName=student.FirstName,LastName=student.LastName,IndexNumber=student.IndexNumber });
-                       return Ok(student);
-                   }
-
-                   [HttpPut("{id}")]
-                   public IActionResult PutStudent(int id, Student student)
-                   {
-                       if (sList.Exists(x => x.IdStudent == id))
-                       {
-                           var st = sList.FirstOrDefault(s => s.IdStudent == id);
-                           if (st != null)
-                           {
-                               st.FirstName = student.FirstName;
-                               st.LastName = student.LastName;
-                               st.IndexNumber = student.IndexNumber;
-                               return Ok("Aktualizacja dokonczona");
-                           }
-                           else
-                               return NotFound("Nie znaleziono studenta");              
-                       }
-                       return NotFound("Nie znaleziono studenta");
-
-                   }
-
-                   [HttpDelete("{id}")]
-                   public IActionResult DeleteStudent(int id)
-                   {
-                       if (sList.Exists(x => x.IdStudent == id))
-                       {
-                           sList.RemoveAt(id);
-                           return Ok("Usuwanie ukonczone");
-                       }
-                       return NotFound("Nie znaleziono studenta");
-                   }
-                   */
-            }
+    }
 }
