@@ -23,7 +23,7 @@ namespace Cw3.Controllers
             _dbService = dbService;
         }
 
-   /*     [HttpGet]
+  /*      [HttpGet]
         public IActionResult GetStudents()
         {
             var list = new List<Student>();

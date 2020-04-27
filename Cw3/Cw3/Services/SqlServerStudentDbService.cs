@@ -231,5 +231,77 @@ namespace Cw3.Services
                 return false;
             }
         }
+
+        public PasswordResponse getStudentPasswordData(string StudentIndexNumber)
+        {
+            PasswordResponse response = new PasswordResponse();
+            try
+            {
+                using (SqlConnection con = new SqlConnection(ConString))
+                using (SqlCommand com = new SqlCommand())
+                {
+                    com.Connection = con;
+                    com.CommandText = "Select StudentPassword, Value from Student where IndexNumber=@index";
+                    com.Parameters.AddWithValue("@index", StudentIndexNumber);
+
+                    con.Open();
+                    SqlDataReader reader = com.ExecuteReader();
+                    if (reader.Read())
+                    {
+                        response.Password = reader["StudentPassword"].ToString().Trim();
+                        response.Value = reader["Value"].ToString().Trim();
+                        reader.Close();
+                        return response;
+                    }
+                    reader.Close();
+                    return null;
+                }
+            }
+            catch (Exception ex) { return null; }
+        }
+
+        public string GetRefreshTokenOwner(string refreshToken)
+        {
+            try
+            {
+                using (SqlConnection con = new SqlConnection(ConString))
+                using (SqlCommand com = new SqlCommand())
+                {
+                    com.Connection = con;
+                    com.CommandText = "Select IndexNumber from Student where RefreshToken=@Token";
+                    com.Parameters.AddWithValue("@Token", refreshToken);
+                    con.Open();
+                    SqlDataReader reader = com.ExecuteReader();
+
+                    if (reader.Read())
+                    {
+                        string result = reader["IndexNumber"].ToString();
+                        reader.Close();
+                        return result;
+                    }
+                    reader.Close();
+                    return null;
+                }
+            }
+            catch (Exception ex) { return null; }
+        }
+
+        public void SetRefreshToken(string StudentIndexNumber, string refreshToken)
+        {
+            try
+            {
+                using (SqlConnection con = new SqlConnection(ConString))
+                using (SqlCommand com = new SqlCommand())
+                {
+                    com.Connection = con;
+                    com.CommandText = "Update Student Set RefreshToken=@Token where IndexNumber=@IndexNumber";
+                    com.Parameters.AddWithValue("@Token", refreshToken);
+                    com.Parameters.AddWithValue("@IndexNumber", StudentIndexNumber);
+                    con.Open();
+                    com.ExecuteNonQuery();
+                }
+            }
+            catch (Exception ex) { }
+        }
     }
 }

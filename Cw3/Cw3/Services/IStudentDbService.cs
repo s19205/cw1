@@ -12,5 +12,8 @@ namespace Cw3.Services
         EnrollStudentResponse EnrollStudent(EnrollStudentRequest request);
         PromoteStudentResponse PromoteStudents(PromoteStudentRequest request);
         bool IsStudentExists(String StudentIndexNumber);
+        PasswordResponse getStudentPasswordData(String StudentIndexNumber);
+        String GetRefreshTokenOwner(String refreshToken);
+        void SetRefreshToken(String StudentIndexNumber, String refreshToken);
     }
 }

@@ -66,3 +66,11 @@ GET
 /API/enrollments
 
 ?IndexNumber=s9001
+GET
+/API/students
+
+
+GET
+/favicon.ico
+
+
