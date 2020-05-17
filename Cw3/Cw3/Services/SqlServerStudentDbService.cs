@@ -1,6 +1,7 @@
 ﻿using Cw3.DTOs.Requests;
 using Cw3.DTOs.Responses;
 using Cw3.Models;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -13,10 +14,6 @@ namespace Cw3.Services
 
     public class SqlServerStudentDbService : IStudentDbService
     {
-        private int semester;
-        private DateTime startDate;
-        private const string ConString = "Data Source=db-mssql;Initial Catalog=s19205;Integrated Security=True";
-
         s19205Context dbContext;
 
         public SqlServerStudentDbService(s19205Context dbContext)
@@ -26,190 +23,129 @@ namespace Cw3.Services
 
         public EnrollStudentResponse EnrollStudent(EnrollStudentRequest request)
         {
-            using (SqlConnection con = new SqlConnection(ConString))
+            try
             {
-                con.Open();
-                var tran = con.BeginTransaction();
+                if (IsStudentExists(request.IndexNumber) || !dbContext.Studies.Any()) { return null; }
 
-                int idStudies = 0;
-                int idEnrollment = 0;
+                var study = dbContext.Studies.Where(st => st.Name == request.Studies).FirstOrDefault();
+                if (study == null) { return null; }
+                int studyId = study.IdStudy;
 
-                using (SqlCommand com1 = new SqlCommand())
+                var enrollment = dbContext.Enrollment.Where(enroll2 => 
+                                            enroll2.IdStudy == studyId && enroll2.Semester == 1 && enroll2.StartDate == dbContext.Enrollment.Where(enroll => 
+                                                enroll.IdStudy == studyId && enroll.Semester == 1
+                                            ).Max(enroll => enroll.StartDate)).FirstOrDefault();
+
+                if (enrollment != null)
                 {
-                    com1.Connection = con;
-                    try
+                    var tmpStudent = new Student
                     {
-                        com1.Transaction = tran;
-                        //1. czy istnieja studia?
-                        com1.CommandText = "select IdStudy from Studies  where Name = @name";
-                        com1.Parameters.AddWithValue("name", request.Studies);
-                        var dr = com1.ExecuteReader();
+                        IndexNumber = request.IndexNumber,
+                        FirstName = request.FirstName,
+                        LastName = request.LastName,
+                        BirthDate = request.BirthDate,
+                        IdEnrollment = enrollment.IdEnrollment
+                    };
+                    dbContext.Add(tmpStudent);
+                    dbContext.SaveChanges();
 
-                        if (!dr.Read())
-                        {
-                            dr.Close();
-                            tran.Rollback();
-                            //return BadRequest("Studia nie istnieja!");
-                        }
-                        idStudies = (int)dr["IdStudy"];
-                        dr.Close();
-                    }
-                    catch (SqlException exc)      //kiedy bled ktorego nie przewidzialismy
+                    var result = dbContext.Enrollment
+                                .Where(el => el.IdEnrollment == enrollment.IdEnrollment)
+                                .Join(dbContext.Studies,
+                                      (el1) => el1.IdStudy,
+                                      (el2) => el2.IdStudy,
+                                      (el1, el2) => new { Semester = el1.Semester, StartDate = el1.StartDate })
+                                .FirstOrDefault();
+
+                    return new EnrollStudentResponse
                     {
-                        tran.Rollback();
-                    }
-                }
-                using (SqlCommand com2 = new SqlCommand())
+                        LastName = request.LastName,
+                        StartDate = result.StartDate,
+                        Semester = result.Semester
+                    };
+
+                } else
                 {
-                    com2.Connection = con;
-                    try
+                    var NewEnrollment = new Enrollment
                     {
-                        com2.Transaction = tran;
-                        com2.CommandText = "select max(idenrollment)+1 from enrollment";
-                        int idEnr;
-                        var dr = com2.ExecuteReader();
-                        if (dr.Read())
-                        {
-                            idEnr = dr.GetInt32(0);
-                        }
-                        dr.Close();
-                    }
-                    catch (SqlException exc)      //kiedy bled ktorego nie przewidzialismy
-                    {
-                        tran.Rollback();
-                    }
-                }
-                if (idStudies > 0)
-                {
-                    using (SqlCommand com3 = new SqlCommand())
-                    {
-                        com3.Connection = con;
-                        try
-                        {
-                            //3. szukamy czy istnije taki semestr
-                            com3.Transaction = tran;
-                            com3.CommandText = "SELECT IdEnrollment FROM Enrollment WHERE Semester=1 AND IdStudy=@idStudies";
-                            com3.Parameters.AddWithValue("idStudies", idStudies);
-                            var dr = com3.ExecuteReader();
-                            if (!dr.Read()) //jesli nie istnije to dodajemy do bazy danych
-                            {
+                        IdEnrollment = dbContext.Enrollment.Any() ? dbContext.Enrollment.Max(e => e.IdEnrollment) + 1 : 1,
+                        IdStudy = studyId,
+                        Semester = 1,
+                        StartDate = DateTime.Now
+                    };
+                    dbContext.Add(NewEnrollment);
+                    dbContext.SaveChanges();
 
-                                com3.CommandText = "insert into enrollments values(Max(IdEnrollment+1), 1, @idStudy, CONVERT(date, GETDATE()))";
-                                com3.Parameters.AddWithValue("idStudy", idStudies);
-                            }
-                            idEnrollment = (int)dr["IdEnrollment"];
-                            dr.Close();
-                        }
-                        catch (SqlException exc)      //kiedy bled ktorego nie przewidzialismy
-                        {
-                            tran.Rollback();
-                        }
-                    }
-                }
-                using (SqlCommand com4 = new SqlCommand())
-                {
-                    com4.Connection = con;
-                    try
+                    var tmpStudent = new Student
                     {
+                        IndexNumber = request.IndexNumber,
+                        FirstName = request.FirstName,
+                        LastName = request.LastName,
+                        BirthDate = request.BirthDate,
+                        IdEnrollment = NewEnrollment.IdEnrollment
+                    };
 
-                        //4. zapisanie semestru i date na pryszlosc
-                        com4.Transaction = tran;
-                        com4.CommandText = "select semester, startdate from enrollment where IdEnrollment=@idEnrollment";
-                        com4.Parameters.AddWithValue("idEnrollment", idEnrollment);
-                        var dr = com4.ExecuteReader();
-                        if (dr.Read())
-                        {
-                            semester = (int)dr["semester"];
-                            startDate = (DateTime)dr["startdate"];
-                        }
-                        dr.Close();
-                    }
-                    catch (SqlException exc)      //kiedy bled ktorego nie przewidzialismy
-                    {
-                        tran.Rollback();
-                    }
-                }
-                using (SqlCommand com5 = new SqlCommand())
-                {
-                    com5.Connection = con;
-                    try
-                    {
-                        //5. czy podany indeks studenta jest unikalny
-                        com5.Transaction = tran;
-                        com5.CommandText = "select * from Student where indexnumber = @index";
-                        com5.Parameters.AddWithValue("index", request.IndexNumber);
-                        var dr = com5.ExecuteReader();
-                        if (dr.Read())
-                        {
-                            dr.Close();
-                            tran.Rollback();
-                           // return BadRequest("Student uz istnieje!");
-                        }
-                        dr.Close();
-                    }
-                    catch (SqlException exc)      //kiedy bled ktorego nie przewidzialismy
-                    {
-                        tran.Rollback();
-                    }
-                }
-                using (SqlCommand com6 = new SqlCommand())
-                {
-                    com6.Connection = con;
-                    try
-                    {
-                        //6. dodanie studenta
-                        com6.Transaction = tran;
-                        com6.CommandText = "insert into Student values (@index, @Fname, @Lname, @birthday, @idEnrollment)";
-                        com6.Parameters.AddWithValue("index", request.IndexNumber);
-                        com6.Parameters.AddWithValue("Fname", request.FirstName);
-                        com6.Parameters.AddWithValue("Lname", request.LastName);
-                        com6.Parameters.AddWithValue("birthday", request.BirthDate);
-                        com6.Parameters.AddWithValue("idEnrollment", idEnrollment);
+                    dbContext.Add(tmpStudent);
+                    dbContext.SaveChanges();
 
-                        com6.ExecuteNonQuery();
+                    var Result = dbContext.Enrollment
+                               .Where(el => el.IdEnrollment == NewEnrollment.IdEnrollment)
+                               .Join(dbContext.Studies,
+                                     (el1) => el1.IdStudy,
+                                     (el2) => el2.IdStudy,
+                                     (el1, el2) => new { Semester = el1.Semester, StartDate = el1.StartDate})
+                               .FirstOrDefault();
 
-                        //kiedy wszystko ok
-                        tran.Commit();
-                    }
-                    catch (SqlException exc)      //kiedy bled ktorego nie przewidzialismy
+                    return new EnrollStudentResponse
                     {
-                        tran.Rollback();
-                    }
-                }
-            }
-            var response = new EnrollStudentResponse();
-            response.LastName = request.LastName;
-            response.Semester = semester;
-            response.StartDate = startDate;
+                        LastName = request.LastName,
+                        StartDate = Result.StartDate,
+                        Semester = Result.Semester
+                    };
 
-            return response;
+                }
+            } catch(Exception ex) { return null; }
+
         }
 
         public PromoteStudentResponse PromoteStudents(PromoteStudentRequest request)
         {
-            var response = new PromoteStudentResponse();
-            using (SqlConnection con = new SqlConnection(ConString))
+            try
             {
-                con.Open();
-                SqlCommand com = new SqlCommand("promoteStudent", con);
-                com.CommandType = CommandType.StoredProcedure;
-
-                com.Parameters.Add(new SqlParameter("@Studies", request.Studies));
-                com.Parameters.Add(new SqlParameter("@Semester", request.Semester));
-
-                using (SqlDataReader rdr = com.ExecuteReader())
+                if (!dbContext.Enrollment.Any() || !dbContext.Studies.Any())
                 {
-                    while (rdr.Read())
-                    {
-                        response.IdEnrollment = (int)rdr["IdEnrollment"];
-                        response.Semester = (int)rdr["Semester"];
-                        response.StartDate = (DateTime)rdr["StartDate"];
-                    }
-                    rdr.Close();
+                    return null;
                 }
-                con.Close();
+                var enrollment = dbContext.Enrollment
+                                          .Join(dbContext.Studies, el1 => el1.IdStudy, el2 => el2.IdStudy, (el1, el2) => new { Semester = el1.Semester, el2.Name })
+                                          .Where(el => el.Semester == request.Semester && el.Name == request.Studies)
+                                          .FirstOrDefault();
+                if (enrollment == null)
+                {
+                    return null;
+                }
+
+                SqlParameter p1 = new SqlParameter("@Study", request.Studies);
+                SqlParameter p2 = new SqlParameter("@Semester", request.Semester);
+                
+                var procedure = dbContext.Enrollment.FromSqlRaw("exec PromoteStudents @Study,@Semester", p1, p2)
+                                                   .ToList()
+                                                   .SingleOrDefault();
+                if (procedure == null)
+                {
+                    return null;
+                }
+                return new PromoteStudentResponse
+                {
+                    IdEnrollment = procedure.IdEnrollment,
+                    Semester = procedure.Semester,
+                    StartDate = procedure.StartDate
+                };
+
+            } catch (Exception ex)
+            {
+                return null;
             }
-            return response;
         }
 
         public bool IsStudentExists(string StudentIndexNumber)

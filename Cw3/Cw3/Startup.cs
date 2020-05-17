@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Cw3.DAL;
 using Cw3.Middlewares;
 using Cw3.Models;
 using Cw3.Services;

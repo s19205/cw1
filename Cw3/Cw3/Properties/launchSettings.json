@@ -12,7 +12,7 @@
     "IIS Express": {
       "commandName": "IISExpress",
       "launchBrowser": true,
-      "launchUrl": "API/students",
+      "launchUrl": "API/enrollments",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
@@ -20,7 +20,7 @@
     "Cw3": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "API/students",
+      "launchUrl": "API/enrollments",
       "applicationUrl": "http://localhost:5000",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
