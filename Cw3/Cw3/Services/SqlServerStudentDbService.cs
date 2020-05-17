@@ -17,6 +17,13 @@ namespace Cw3.Services
         private DateTime startDate;
         private const string ConString = "Data Source=db-mssql;Initial Catalog=s19205;Integrated Security=True";
 
+        s19205Context dbContext;
+
+        public SqlServerStudentDbService(s19205Context dbContext)
+        {
+            this.dbContext = dbContext;
+        }
+
         public EnrollStudentResponse EnrollStudent(EnrollStudentRequest request)
         {
             using (SqlConnection con = new SqlConnection(ConString))
@@ -207,45 +214,54 @@ namespace Cw3.Services
 
         public bool IsStudentExists(string StudentIndexNumber)
         {
+            return dbContext.Student.Any() ? dbContext.Student.Where(student => student.IndexNumber == StudentIndexNumber).FirstOrDefault() == null : false;
+        }
+
+        public IEnumerable<Student> GetStudents()
+        {
+            return dbContext.Student.ToList();
+        }
+
+        public bool DeleteStudent(string StudentIndexNumber)
+        {
             try
             {
-                using (SqlConnection con = new SqlConnection(ConString))
-                using (SqlCommand com = new SqlCommand())
+                var student = dbContext.Student.Where(stud => stud.IndexNumber == StudentIndexNumber).FirstOrDefault();
+                if (student == null)
                 {
-                    com.Connection = con;
-                    com.CommandText = "Select * from Student where IndexNumber=@index";
-                    com.Parameters.AddWithValue("@index", StudentIndexNumber);
-
-                    con.Open();
-                    SqlDataReader reader = com.ExecuteReader();
-
-                    if (reader.Read())
-                    {
-                        reader.Close();
-                        return true;
-                    }
-                    reader.Close();
                     return false;
                 }
-            } catch (Exception e)
+                dbContext.Student.Remove(student);
+                dbContext.SaveChanges();
+                return true;
+            }
+            catch (Exception ex)
             {
                 return false;
             }
         }
 
-        public IEnumerable<Student> GetStudents()
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool DeleteStudent(string StudentIndexNumber)
-        {
-            throw new NotImplementedException();
-        }
-
         public bool UpdateStudent(UpdateStudentRequest request)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var student = dbContext.Student.Where(student => student.IndexNumber == request.IndexNumber).FirstOrDefault();
+                if (student == null)
+                {
+                    return false;
+                }
+
+                student.FirstName = request.FirstName;
+                student.LastName = request.LastName;
+                student.IdEnrollment = request.IdEnrollment;
+                student.BirthDate = request.BirthDate;
+                dbContext.SaveChanges();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
         }
     }
 }

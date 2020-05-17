@@ -25,6 +25,34 @@ namespace Cw3.Controllers
             _service = service;
         }
 
+        [HttpPut("UpdateStudent")]
+        public IActionResult UpdateStudent(UpdateStudentRequest request)
+        {
+            if (_service.UpdateStudent(request))
+                return Ok("Student data has benn changed");
+            else
+                return BadRequest("Wrong data was passed");
+        }
+
+        [HttpDelete("deleteStudent/{StudentIndexNumber}")]
+        public IActionResult DeleteStudent(string StudentIndexNumber)
+        {
+            if (_service.DeleteStudent(StudentIndexNumber))
+                return Ok("Student was deleted");
+            else
+                return BadRequest("Wrong data was passed");
+        }
+        [HttpGet("students")]
+        public IActionResult GetStudentsList()
+        {
+            return Ok(_service.GetStudents());
+        }
+
+        [HttpGet("{num}")]
+        public IActionResult GetStudentsList(String num)
+        {
+            return Ok(_service.IsStudentExists(num));
+        }
 
 
         [HttpPost]
