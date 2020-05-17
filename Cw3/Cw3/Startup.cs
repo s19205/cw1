@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Cw3.DAL;
 using Cw3.Middlewares;
+using Cw3.Models;
 using Cw3.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -29,46 +30,19 @@ namespace Cw3
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddTransient<IStudentDbService, SqlServerStudentDbService>();
-            services.AddSingleton<IDbService, MockDbService>();
-
-            //1. dodawanie dokumentacji
-            services.AddSwaggerGen(config =>
-            {
-                config.SwaggerDoc("v1", new OpenApiInfo { Title = "Students App API", Version = "v1" });
-                //...
-            });
-
+            services.AddScoped<s19205Context, s19205Context>();
+            services.AddScoped<IStudentDbService, SqlServerStudentDbService>();
+            //services.AddSingleton<IDbService, MockDbService>();
             services.AddControllers();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IStudentDbService dbService)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
-
-            //2.dodawanie dokumentacji
-            app.UseSwagger();
-            app.UseSwaggerUI(config =>
-            {
-                config.SwaggerEndpoint("/swagger/v1/swagger.json", "Students App API");
-            });
-
-            //middleware -  Index: sxxxxx -> DB
-            app.UseMiddleware<LoggingMiddleware>();
-            app.Use(async (context, next) =>
-            {
-                if (!context.Request.Headers.ContainsKey("IndexNumber") || !dbService.IsStudentExists(context.Request.Headers["IndexNumber"]))
-                {
-                    context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                    await context.Response.WriteAsync("Wrong IndexNumber as autorization id!");
-                    return;
-                }
-                await next();
-            });
 
             app.UseRouting();
 

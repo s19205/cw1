@@ -1,5 +1,6 @@
 ﻿using Cw3.DTOs.Requests;
 using Cw3.DTOs.Responses;
+using Cw3.Models;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -230,6 +231,21 @@ namespace Cw3.Services
             {
                 return false;
             }
+        }
+
+        public IEnumerable<Student> GetStudents()
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool DeleteStudent(string StudentIndexNumber)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool UpdateStudent(UpdateStudentRequest request)
+        {
+            throw new NotImplementedException();
         }
     }
 }
